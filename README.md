@@ -2,7 +2,16 @@
 
 A simple, beautiful website that tracks how many free credits/plans I have left on all the AI coding tools on my laptop!
 
-👉 **[View My Live Dashboard Here!](https://dn74iiit.github.io/ai-credits-tracker/)** *(Note: Replace `ai-credits-tracker` with your repository name if you change it)*
+👉 **[View My Live Dashboard Here!](https://dn74iiit.github.io/ai-credits-tracker/)**
+
+---
+
+## 🔒 Security & API Key Safety
+
+Your private API keys are **never** uploaded to GitHub:
+* **Strictly Local**: Your keys (OpenAI, Gemini, Devin) are stored in the local `.env` file on your laptop.
+* **Git Protection**: The `.gitignore` file in this repository tells Git to completely ignore the `.env` file. It will never be staged, committed, or pushed to your GitHub repository.
+* **Only Stats are Pushed**: The Python script only uses your keys locally on your laptop to query the usage endpoints. It writes the usage numbers (e.g. `79/200` requests or `0.00 ACUs`) to the `ai-tracker-sources.json` file. Only these final statistics are pushed to GitHub. Your secret keys never leave your machine!
 
 ---
 
