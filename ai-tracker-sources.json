@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-03T18:31:18.083773Z",
+  "lastUpdated": "2026-07-03T18:41:19.229989Z",
   "sources": [
     {
       "name": "GitHub Copilot in VS Code",
@@ -47,9 +47,9 @@
       "keywords": [
         "devin"
       ],
-      "limit": 15,
-      "used": 0.0,
-      "resetDate": "2026-07-06",
+      "limit": 100,
+      "used": 0,
+      "resetDate": "2026-07-05",
       "notes": "Track Devin weekly ACUs."
     },
     {
