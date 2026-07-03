@@ -1,0 +1,3 @@
+https://backend.cursor.sh/api/usage
+https://api2.cursor.sh/api/usage
+https://cursor.com/api/usage

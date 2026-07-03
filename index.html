@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Credit Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="app.js" defer></script>
+</head>
+<body>
+    <div class="background-grid"></div>
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+
+    <div class="container">
+        <header>
+            <div class="logo-area">
+                <span class="logo-icon">⚡</span>
+                <div>
+                    <h1>AI Credit Dashboard</h1>
+                    <p class="subtitle">Real-time status of your local & cloud assistant plans</p>
+                </div>
+            </div>
+            <div class="status-panel">
+                <div class="status-badge">
+                    <span class="pulse-dot"></span>
+                    <span id="sync-status-text">Checking status...</span>
+                </div>
+                <div id="last-updated" class="last-updated">Last updated: N/A</div>
+            </div>
+        </header>
+
+        <section class="overview-stats">
+            <div class="stat-mini-card">
+                <span class="icon">🤖</span>
+                <div class="details">
+                    <h3>Active Trackers</h3>
+                    <p id="total-trackers">0</p>
+                </div>
+            </div>
+            <div class="stat-mini-card">
+                <span class="icon">📊</span>
+                <div class="details">
+                    <h3>Most Used App</h3>
+                    <p id="most-used-app">Analyzing...</p>
+                </div>
+            </div>
+            <div class="stat-mini-card">
+                <span class="icon">🗓️</span>
+                <div class="details">
+                    <h3>Next Reset Date</h3>
+                    <p id="next-reset">Checking...</p>
+                </div>
+            </div>
+        </section>
+
+        <main id="cards-grid" class="cards-grid">
+            <!-- Cards will be dynamically injected by app.js -->
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Retrieving credit balances...</p>
+            </div>
+        </main>
+
+        <section class="analytics-section">
+            <div class="chart-container">
+                <h2>Usage Comparison</h2>
+                <div class="canvas-wrapper">
+                    <canvas id="usageChart"></canvas>
+                </div>
+            </div>
+            <div class="info-card">
+                <h2>Sync Instructions</h2>
+                <p>This dashboard pulls data directly from a local repository configuration. To set up automatic sync from your laptop:</p>
+                <ol>
+                    <li>Configure the API keys inside your local <code>.env</code> file.</li>
+                    <li>Verify by running <code>python sync_credits.py</code> in your project folder.</li>
+                    <li>Set up a scheduler to run the script automatically in the background.</li>
+                </ol>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="openInstructions()">View Config Guide</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal for Setup Instructions -->
+    <div id="instructions-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeInstructions()">&times;</span>
+            <h2>Configuration Guide</h2>
+            <div class="modal-body">
+                <h3>Local environment variables (.env)</h3>
+                <p>Ensure your <code>.env</code> file is in the root directory and contains the keys:</p>
+                <pre><code>OPENAI_API_KEY=sk-...
+GEMINI_API_KEY=AIzaSy...
+DEVIN_API_KEY=cog_...</code></pre>
+                
+                <h3>Automated Scheduled Task on Windows</h3>
+                <p>To refresh your stats automatically every 10 minutes:</p>
+                <ol>
+                    <li>Open <strong>Task Scheduler</strong>.</li>
+                    <li>Click <strong>Create Basic Task</strong>. Name it <code>AI Credits Sync</code>.</li>
+                    <li>Set Trigger to <strong>Daily</strong>, then edit the task properties to: <em>"Repeat task every 10 minutes"</em>.</li>
+                    <li>Set Action to <strong>Start a Program</strong>:
+                        <ul>
+                            <li><strong>Program/script:</strong> <code>pythonw.exe</code> (runs without popping up a console window)</li>
+                            <li><strong>Add arguments:</strong> <code>sync_credits.py</code></li>
+                            <li><strong>Start in:</strong> <code>c:\Users\dhanu\OneDrive\Documentos\AI plans tracker site</code></li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

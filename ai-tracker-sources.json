@@ -1,0 +1,72 @@
+{
+  "lastUpdated": "2026-07-03T18:01:36.943294Z",
+  "sources": [
+    {
+      "name": "GitHub Copilot in VS Code",
+      "keywords": [
+        "github copilot",
+        "copilot"
+      ],
+      "limit": 0,
+      "used": 0,
+      "resetDate": "",
+      "notes": "Watch the GitHub Copilot features or usage page."
+    },
+    {
+      "name": "Cursor",
+      "keywords": [
+        "cursor"
+      ],
+      "limit": 200,
+      "used": 79,
+      "resetDate": "2026-07-25",
+      "notes": "Track Cursor free-tier credits."
+    },
+    {
+      "name": "Codex",
+      "keywords": [
+        "codex"
+      ],
+      "limit": 0,
+      "used": 0,
+      "resetDate": "",
+      "notes": "Track Codex monthly credits."
+    },
+    {
+      "name": "Devin",
+      "keywords": [
+        "devin"
+      ],
+      "limit": 0,
+      "used": 0.0,
+      "resetDate": "",
+      "notes": "Track Devin weekly credits."
+    },
+    {
+      "name": "Antigravity Gemini",
+      "keywords": [
+        "antigravity",
+        "gemini"
+      ],
+      "limit": 0,
+      "used": 0,
+      "resetDate": "",
+      "notes": "Track Antigravity Gemini weekly credits."
+    },
+    {
+      "name": "Antigravity Claude",
+      "keywords": [
+        "antigravity",
+        "claude"
+      ],
+      "keywords_extra": [
+        "antigravity",
+        "claude"
+      ],
+      "limit": 0,
+      "used": 0,
+      "resetDate": "",
+      "notes": "Track Antigravity Claude weekly credits."
+    }
+  ]
+}
