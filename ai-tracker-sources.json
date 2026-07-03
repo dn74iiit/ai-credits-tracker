@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-03T18:26:54.571195Z",
+  "lastUpdated": "2026-07-03T18:31:18.083773Z",
   "sources": [
     {
       "name": "GitHub Copilot in VS Code",
@@ -58,9 +58,9 @@
         "antigravity",
         "gemini"
       ],
-      "limit": 0,
+      "limit": 100,
       "used": 0,
-      "resetDate": "2026-07-04",
+      "resetDate": "2026-06-20",
       "notes": "Antigravity Gemini Weekly Limit (63% remaining)."
     },
     {
@@ -70,8 +70,8 @@
         "claude"
       ],
       "limit": 100,
-      "used": 79,
-      "resetDate": "2026-07-09",
+      "used": 95,
+      "resetDate": "2026-06-21",
       "notes": "Antigravity Claude Weekly Limit (21% remaining)."
     }
   ]
