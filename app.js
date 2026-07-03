@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function fetchData() {
     try {
-        const response = await fetch('ai-tracker-sources.json');
+        const response = await fetch('ai-tracker-sources.json?t=' + new Date().getTime());
         if (!response.ok) {
             throw new Error('Failed to load credit details');
         }
