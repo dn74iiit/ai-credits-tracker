@@ -15,6 +15,14 @@ Your private API keys are **never** uploaded to GitHub:
 
 ---
 
+## 💡 FAQ: What if my PC is turned off?
+
+* **Will the website still work?** Yes! The site stays online 24/7. It will show the last updated numbers from when your laptop was last turned on.
+* **When does it refresh?** As soon as you turn your PC back on, the script runs in the background, pulls your latest usage, and updates the site.
+* **Why does the script run on my PC instead of the cloud?** Because Cursor stores your login session directly on your laptop's hard drive. A cloud server cannot read your laptop, so running the script on your own machine is the only way to track Cursor!
+
+---
+
 ## 🚀 How it works
 
 1. **The Website**: A clean, dark-themed dashboard (HTML, CSS, JS) that loads details from `ai-tracker-sources.json`.
