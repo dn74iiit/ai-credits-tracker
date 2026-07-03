@@ -183,9 +183,20 @@ def get_devin_usage(api_key):
             data = json.loads(response.read().decode('utf-8'))
             total_acus = float(data.get("total_acus", 0.0))
             
-            print(f"[SUCCESS] Devin: {total_acus:.2f} ACUs used.")
+            # Calculate next Monday (standard Devin weekly credit reset)
+            today = datetime.date.today()
+            days_to_monday = (0 - today.weekday()) % 7
+            if days_to_monday == 0:
+                days_to_monday = 7
+            next_monday = today + datetime.timedelta(days=days_to_monday)
+            reset_date = next_monday.strftime('%Y-%m-%d')
+            
+            print(f"[SUCCESS] Devin: {total_acus:.2f} ACUs used (resets {reset_date}).")
             # Note: We return only the 'used' ACUs, limit is preserved in the json file
-            return {"used": round(total_acus, 2)}
+            return {
+                "used": round(total_acus, 2),
+                "resetDate": reset_date
+            }
             
     except Exception as e:
         print(f"[ERROR] Failed to retrieve Devin usage: {e}")
@@ -213,7 +224,7 @@ def update_json_file(cursor_stats, openai_stats, devin_stats, gemini_stats):
         with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
             
-        data["lastUpdated"] = datetime.datetime.utcnow().isoformat() + "Z"
+        data["lastUpdated"] = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
         
         for source in data.get("sources", []):
             name_lower = source["name"].lower()
@@ -236,6 +247,8 @@ def update_json_file(cursor_stats, openai_stats, devin_stats, gemini_stats):
                 # Only update limit if provided, otherwise keep existing
                 if "limit" in devin_stats:
                     source["limit"] = devin_stats["limit"]
+                if "resetDate" in devin_stats and devin_stats["resetDate"]:
+                    source["resetDate"] = devin_stats["resetDate"]
                 
             # Match Antigravity Gemini
             elif "gemini" in name_lower and gemini_stats:

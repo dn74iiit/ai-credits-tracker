@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-03T18:01:36.943294Z",
+  "lastUpdated": "2026-07-03T18:18:52.053388Z",
   "sources": [
     {
       "name": "GitHub Copilot in VS Code",
@@ -7,10 +7,10 @@
         "github copilot",
         "copilot"
       ],
-      "limit": 0,
+      "limit": 200,
       "used": 0,
-      "resetDate": "",
-      "notes": "Watch the GitHub Copilot features or usage page."
+      "resetDate": "2026-08-01",
+      "notes": "Copilot Student plan. Tracked from GitHub Billing."
     },
     {
       "name": "Cursor",
@@ -27,20 +27,30 @@
       "keywords": [
         "codex"
       ],
-      "limit": 0,
+      "limit": 100,
+      "used": 24,
+      "resetDate": "2026-07-27",
+      "notes": "Monthly free plan. Usage remaining: 76%."
+    },
+    {
+      "name": "Windsurf",
+      "keywords": [
+        "windsurf"
+      ],
+      "limit": 100,
       "used": 0,
-      "resetDate": "",
-      "notes": "Track Codex monthly credits."
+      "resetDate": "2026-07-05",
+      "notes": "Windsurf weekly quota. 100% remaining."
     },
     {
       "name": "Devin",
       "keywords": [
         "devin"
       ],
-      "limit": 0,
+      "limit": 15,
       "used": 0.0,
-      "resetDate": "",
-      "notes": "Track Devin weekly credits."
+      "resetDate": "2026-07-06",
+      "notes": "Track Devin weekly ACUs."
     },
     {
       "name": "Antigravity Gemini",
@@ -50,8 +60,8 @@
       ],
       "limit": 0,
       "used": 0,
-      "resetDate": "",
-      "notes": "Track Antigravity Gemini weekly credits."
+      "resetDate": "2026-07-04",
+      "notes": "Antigravity Gemini Weekly Limit (63% used)."
     },
     {
       "name": "Antigravity Claude",
@@ -59,14 +69,10 @@
         "antigravity",
         "claude"
       ],
-      "keywords_extra": [
-        "antigravity",
-        "claude"
-      ],
-      "limit": 0,
-      "used": 0,
-      "resetDate": "",
-      "notes": "Track Antigravity Claude weekly credits."
+      "limit": 100,
+      "used": 21,
+      "resetDate": "2026-07-09",
+      "notes": "Antigravity Claude Weekly Limit (21% used)."
     }
   ]
 }
