@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-03T19:09:57.630307Z",
+  "lastUpdated": "2026-07-03T19:16:43.296096Z",
   "sources": [
     {
       "name": "GitHub Copilot in VS Code",
@@ -105,16 +105,16 @@
       "quotas": [
         {
           "name": "Weekly Limit",
-          "used": 0,
+          "used": 37,
           "limit": 100,
-          "resetDate": "2026-06-20",
+          "resetDate": "2026-07-04T01:48:50+05:30",
           "period": "weekly"
         },
         {
           "name": "Five Hour Limit",
           "used": 13,
           "limit": 100,
-          "resetDate": "2026-07-04T04:16:00Z",
+          "resetDate": "2026-07-04T05:14:50+05:30",
           "period": "five-hour"
         }
       ],
@@ -129,16 +129,16 @@
       "quotas": [
         {
           "name": "Weekly Limit",
-          "used": 95,
+          "used": 79,
           "limit": 100,
-          "resetDate": "2026-06-21",
+          "resetDate": "2026-07-09T11:42:50+05:30",
           "period": "weekly"
         },
         {
           "name": "Five Hour Limit",
           "used": 0,
           "limit": 100,
-          "resetDate": "2026-07-04T04:16:00Z",
+          "resetDate": "2026-07-04T05:14:50+05:30",
           "period": "five-hour"
         }
       ],
