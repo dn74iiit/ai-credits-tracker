@@ -150,10 +150,58 @@ def get_openai_usage(api_key):
         return None
 
 def get_devin_usage(api_key):
-    """Fetch Devin consumption/usage metrics using the Devin organization scope API."""
+    """Fetch Devin consumption/usage metrics. Prio 1: Local IDE chat quota. Prio 2: Web API ACUs."""
     print("[INFO] Checking Devin usage...")
+    
+    # 1. Try to read local Devin IDE state cache
+    try:
+        db_path = os.path.expandvars(r'%APPDATA%\devin\User\globalStorage\state.vscdb')
+        if os.path.exists(db_path):
+            import sqlite3
+            conn = sqlite3.connect(db_path)
+            c = conn.cursor()
+            c.execute("SELECT value FROM ItemTable WHERE key LIKE 'windsurf.reactSettings.cachedPlanInfoData:%'")
+            row = c.fetchone()
+            conn.close()
+            
+            if row:
+                info = json.loads(row[0])
+                weekly_rem = info.get("weeklyRemainingPercent", 100)
+                weekly_used = int(round(100 - weekly_rem))
+                weekly_reset_unix = info.get("weeklyResetAtUnix")
+                
+                daily_rem = info.get("dailyRemainingPercent", 100)
+                daily_used = int(round(100 - daily_rem))
+                daily_reset_unix = info.get("dailyResetAtUnix")
+                
+                weekly_reset_date = ""
+                if weekly_reset_unix:
+                    try:
+                        dt = datetime.datetime.fromtimestamp(weekly_reset_unix, datetime.timezone.utc)
+                        weekly_reset_date = dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+                    except Exception:
+                        pass
+                        
+                daily_reset_date = ""
+                if daily_reset_unix:
+                    try:
+                        dt = datetime.datetime.fromtimestamp(daily_reset_unix, datetime.timezone.utc)
+                        daily_reset_date = dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+                    except Exception:
+                        pass
+                        
+                print(f"[SUCCESS] Devin (Local IDE): Daily {daily_used}%, Weekly {weekly_used}%.")
+                return {
+                    "is_local": True,
+                    "daily": {"used": daily_used, "limit": 100, "resetDate": daily_reset_date},
+                    "weekly": {"used": weekly_used, "limit": 100, "resetDate": weekly_reset_date}
+                }
+    except Exception as e:
+        print(f"[WARN] Failed to read local Devin IDE cache: {e}")
+
+    # 2. Fallback: Query Web API
     if not api_key or api_key == "your_devin_key_here":
-        print("[WARN] Devin API key not configured in .env.")
+        print("[WARN] Devin API key not configured in .env. Skipping Web API check.")
         return None
         
     try:
@@ -189,31 +237,84 @@ def get_devin_usage(api_key):
             if days_to_monday == 0:
                 days_to_monday = 7
             next_monday = today + datetime.timedelta(days=days_to_monday)
-            reset_date = next_monday.strftime('%Y-%m-%d')
+            reset_date = next_monday.strftime('%Y-%m-%dT%H:%M:%SZ')
             
-            print(f"[SUCCESS] Devin: {total_acus:.2f} ACUs used (resets {reset_date}).")
-            # Note: We return only the 'used' ACUs, limit is preserved in the json file
+            print(f"[SUCCESS] Devin (Web API): {total_acus:.2f} ACUs used (resets {reset_date}).")
             return {
-                "used": round(total_acus, 2),
-                "resetDate": reset_date
+                "is_local": False,
+                "weekly": {"used": round(total_acus, 2), "resetDate": reset_date}
             }
             
     except Exception as e:
-        print(f"[ERROR] Failed to retrieve Devin usage: {e}")
+        print(f"[ERROR] Failed to retrieve Devin Web API usage: {e}")
         return None
 
-def get_gemini_usage(api_key):
-    """Placeholder check for Google AI Studio / Gemini."""
-    print("[INFO] Checking Google Gemini API usage...")
-    if not api_key or api_key == "your_gemini_key_here":
-        print("[WARN] Gemini API key not configured in .env.")
+def get_antigravity_usage():
+    """Fetch usage stats from Antigravity IDE local cache."""
+    print("[INFO] Checking Antigravity IDE usage...")
+    try:
+        config_path = os.path.expandvars(r'%APPDATA%\antigravity-usage\config.json')
+        if not os.path.exists(config_path):
+            print("[WARN] Antigravity IDE configuration not found.")
+            return None
+            
+        with open(config_path, "r", encoding="utf-8") as f:
+            config = json.load(f)
+            email = config.get("activeAccount")
+            
+        if not email:
+            print("[WARN] Active account not found in Antigravity config.")
+            return None
+            
+        cache_path = os.path.expandvars(f'%APPDATA%\\antigravity-usage\\accounts\\{email}\\cache.json')
+        if not os.path.exists(cache_path):
+            print("[WARN] Antigravity cache file not found.")
+            return None
+            
+        with open(cache_path, "r", encoding="utf-8") as f:
+            cache = json.load(f)
+            
+        models = cache.get("data", {}).get("models", [])
+        
+        gemini_stats = None
+        claude_stats = None
+        
+        # Find first gemini model and first claude model
+        for m in models:
+            model_id = m.get("modelId", "").lower()
+            rem_pct = m.get("remainingPercentage", 1.0)
+            reset_time_str = m.get("resetTime", "")
+            
+            # Format reset date
+            reset_date = ""
+            if reset_time_str:
+                try:
+                    dt = datetime.datetime.strptime(reset_time_str.split(".")[0].replace("Z", ""), "%Y-%m-%dT%H:%M:%S")
+                    reset_date = dt.strftime('%Y-%m-%d')
+                except Exception:
+                    pass
+            
+            used_pct = int(round((1.0 - rem_pct) * 100))
+            
+            if "gemini" in model_id and not gemini_stats:
+                gemini_stats = {"used": used_pct, "limit": 100, "resetDate": reset_date}
+            elif "claude" in model_id and not claude_stats:
+                claude_stats = {"used": used_pct, "limit": 100, "resetDate": reset_date}
+                
+        if gemini_stats:
+            print(f"[SUCCESS] Antigravity Gemini: {gemini_stats.get('used')}% used (resets {gemini_stats.get('resetDate')}).")
+        if claude_stats:
+            print(f"[SUCCESS] Antigravity Claude: {claude_stats.get('used')}% used (resets {claude_stats.get('resetDate')}).")
+            
+        return {
+            "gemini": gemini_stats,
+            "claude": claude_stats
+        }
+    except Exception as e:
+        print(f"[ERROR] Failed to retrieve Antigravity usage: {e}")
         return None
-    # Google AI Studio API key doesn't expose a credit-balance dashboard endpoint,
-    # it is free-tier rate-limited. We return a placeholder to verify connectivity.
-    print("[SUCCESS] Google Gemini API key is configured. Free tier active (rate limits apply).")
-    return {"used": 0, "limit": 0} # 0 indicates unlimited / rate-only
 
-def update_json_file(cursor_stats, openai_stats, devin_stats, gemini_stats):
+def update_json_file(cursor_stats, openai_stats, devin_stats, antigravity_stats):
     """Write updated usage stats into the local JSON data file."""
     file_path = "ai-tracker-sources.json"
     if not os.path.exists(file_path):
@@ -231,29 +332,55 @@ def update_json_file(cursor_stats, openai_stats, devin_stats, gemini_stats):
             
             # Match Cursor
             if "cursor" in name_lower and cursor_stats:
-                source["used"] = cursor_stats["used"]
-                source["limit"] = cursor_stats["limit"]
-                if "resetDate" in cursor_stats and cursor_stats["resetDate"]:
-                    source["resetDate"] = cursor_stats["resetDate"]
+                for q in source.get("quotas", []):
+                    if q.get("period") == "monthly":
+                        q["used"] = cursor_stats["used"]
+                        q["limit"] = cursor_stats["limit"]
+                        q["resetDate"] = cursor_stats["resetDate"]
                 
             # Match Codex (OpenAI)
             elif ("codex" in name_lower or "openai" in name_lower) and openai_stats:
-                source["used"] = openai_stats["used"]
-                source["limit"] = openai_stats["limit"]
+                for q in source.get("quotas", []):
+                    if q.get("period") == "monthly":
+                        q["used"] = openai_stats["used"]
+                        q["limit"] = openai_stats["limit"]
                 
             # Match Devin
             elif "devin" in name_lower and devin_stats:
-                source["used"] = devin_stats["used"]
-                # Only update limit if provided, otherwise keep existing
-                if "limit" in devin_stats:
-                    source["limit"] = devin_stats["limit"]
-                if "resetDate" in devin_stats and devin_stats["resetDate"]:
-                    source["resetDate"] = devin_stats["resetDate"]
+                if devin_stats.get("is_local"):
+                    for q in source.get("quotas", []):
+                        if q.get("period") == "daily" and "daily" in devin_stats:
+                            q["used"] = devin_stats["daily"]["used"]
+                            q["limit"] = devin_stats["daily"]["limit"]
+                            q["resetDate"] = devin_stats["daily"]["resetDate"]
+                        elif q.get("period") == "weekly" and "weekly" in devin_stats:
+                            q["used"] = devin_stats["weekly"]["used"]
+                            q["limit"] = devin_stats["weekly"]["limit"]
+                            q["resetDate"] = devin_stats["weekly"]["resetDate"]
+                else:
+                    # Web API: update weekly only
+                    for q in source.get("quotas", []):
+                        if q.get("period") == "weekly" and "weekly" in devin_stats:
+                            q["used"] = devin_stats["weekly"]["used"]
+                            q["resetDate"] = devin_stats["weekly"]["resetDate"]
                 
             # Match Antigravity Gemini
-            elif "gemini" in name_lower and gemini_stats:
-                source["used"] = gemini_stats["used"]
-                source["limit"] = gemini_stats["limit"]
+            elif "gemini" in name_lower and antigravity_stats and antigravity_stats.get("gemini"):
+                for q in source.get("quotas", []):
+                    if q.get("period") == "weekly":
+                        q["used"] = antigravity_stats["gemini"]["used"]
+                        q["limit"] = antigravity_stats["gemini"]["limit"]
+                        if antigravity_stats["gemini"].get("resetDate"):
+                            q["resetDate"] = antigravity_stats["gemini"]["resetDate"]
+                    
+            # Match Antigravity Claude
+            elif "claude" in name_lower and antigravity_stats and antigravity_stats.get("claude"):
+                for q in source.get("quotas", []):
+                    if q.get("period") == "weekly":
+                        q["used"] = antigravity_stats["claude"]["used"]
+                        q["limit"] = antigravity_stats["claude"]["limit"]
+                        if antigravity_stats["claude"].get("resetDate"):
+                            q["resetDate"] = antigravity_stats["claude"]["resetDate"]
                 
         with open(file_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
@@ -309,11 +436,11 @@ def main():
     cursor_stats = get_cursor_usage()
     openai_stats = get_openai_usage(env.get("OPENAI_API_KEY"))
     devin_stats = get_devin_usage(env.get("DEVIN_API_KEY"))
-    gemini_stats = get_gemini_usage(env.get("GEMINI_API_KEY"))
+    antigravity_stats = get_antigravity_usage()
     
     # Update local database file
     if not dry_run:
-        update_ok = update_json_file(cursor_stats, openai_stats, devin_stats, gemini_stats)
+        update_ok = update_json_file(cursor_stats, openai_stats, devin_stats, antigravity_stats)
         if update_ok and not skip_git:
             push_to_github()
     else:
@@ -321,7 +448,7 @@ def main():
         print(f"Cursor: {cursor_stats}")
         print(f"OpenAI: {openai_stats}")
         print(f"Devin: {devin_stats}")
-        print(f"Gemini: {gemini_stats}")
+        print(f"Antigravity: {antigravity_stats}")
 
 if __name__ == "__main__":
     main()

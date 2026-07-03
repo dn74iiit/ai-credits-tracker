@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-03T18:41:19.229989Z",
+  "lastUpdated": "2026-07-03T18:47:28.541752Z",
   "sources": [
     {
       "name": "GitHub Copilot in VS Code",
@@ -7,9 +7,15 @@
         "github copilot",
         "copilot"
       ],
-      "limit": 200,
-      "used": 0,
-      "resetDate": "2026-08-01",
+      "quotas": [
+        {
+          "name": "Monthly Limit",
+          "used": 0,
+          "limit": 200,
+          "resetDate": "2026-08-01",
+          "period": "monthly"
+        }
+      ],
       "notes": "Copilot Student plan. Tracked from GitHub Billing."
     },
     {
@@ -17,9 +23,15 @@
       "keywords": [
         "cursor"
       ],
-      "limit": 200,
-      "used": 79,
-      "resetDate": "2026-07-25",
+      "quotas": [
+        {
+          "name": "Monthly Requests",
+          "used": 79,
+          "limit": 200,
+          "resetDate": "2026-07-25",
+          "period": "monthly"
+        }
+      ],
       "notes": "Track Cursor free-tier credits."
     },
     {
@@ -27,9 +39,15 @@
       "keywords": [
         "codex"
       ],
-      "limit": 100,
-      "used": 24,
-      "resetDate": "2026-07-27",
+      "quotas": [
+        {
+          "name": "Monthly Usage",
+          "used": 24,
+          "limit": 100,
+          "resetDate": "2026-07-27",
+          "period": "monthly"
+        }
+      ],
       "notes": "Monthly free plan. Usage remaining: 76%."
     },
     {
@@ -37,20 +55,46 @@
       "keywords": [
         "windsurf"
       ],
-      "limit": 100,
-      "used": 0,
-      "resetDate": "2026-07-05",
-      "notes": "Windsurf weekly quota. 100% remaining."
+      "quotas": [
+        {
+          "name": "Daily Quota",
+          "used": 0,
+          "limit": 100,
+          "resetDate": "2026-07-04T13:30:00Z",
+          "period": "daily"
+        },
+        {
+          "name": "Weekly Quota",
+          "used": 0,
+          "limit": 100,
+          "resetDate": "2026-07-05T13:30:00Z",
+          "period": "weekly"
+        }
+      ],
+      "notes": "Windsurf editor chat limits."
     },
     {
       "name": "Devin",
       "keywords": [
         "devin"
       ],
-      "limit": 100,
-      "used": 0,
-      "resetDate": "2026-07-05",
-      "notes": "Track Devin weekly ACUs."
+      "quotas": [
+        {
+          "name": "Daily Quota",
+          "used": 0,
+          "limit": 100,
+          "resetDate": "2026-07-04T08:00:00Z",
+          "period": "daily"
+        },
+        {
+          "name": "Weekly Quota",
+          "used": 0,
+          "limit": 100,
+          "resetDate": "2026-07-05T08:00:00Z",
+          "period": "weekly"
+        }
+      ],
+      "notes": "Devin local IDE chat limits."
     },
     {
       "name": "Antigravity Gemini",
@@ -58,10 +102,23 @@
         "antigravity",
         "gemini"
       ],
-      "limit": 100,
-      "used": 0,
-      "resetDate": "2026-06-20",
-      "notes": "Antigravity Gemini Weekly Limit (63% remaining)."
+      "quotas": [
+        {
+          "name": "Weekly Limit",
+          "used": 0,
+          "limit": 100,
+          "resetDate": "2026-06-20",
+          "period": "weekly"
+        },
+        {
+          "name": "Five Hour Limit",
+          "used": 13,
+          "limit": 100,
+          "resetDate": "2026-07-04T04:16:00Z",
+          "period": "five-hour"
+        }
+      ],
+      "notes": "Antigravity Gemini limits."
     },
     {
       "name": "Antigravity Claude",
@@ -69,10 +126,23 @@
         "antigravity",
         "claude"
       ],
-      "limit": 100,
-      "used": 95,
-      "resetDate": "2026-06-21",
-      "notes": "Antigravity Claude Weekly Limit (21% remaining)."
+      "quotas": [
+        {
+          "name": "Weekly Limit",
+          "used": 95,
+          "limit": 100,
+          "resetDate": "2026-06-21",
+          "period": "weekly"
+        },
+        {
+          "name": "Five Hour Limit",
+          "used": 0,
+          "limit": 100,
+          "resetDate": "2026-07-04T04:16:00Z",
+          "period": "five-hour"
+        }
+      ],
+      "notes": "Antigravity Claude limits."
     }
   ]
 }

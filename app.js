@@ -61,27 +61,90 @@ function renderDashboard(data) {
     data.sources.forEach(source => {
         activeTrackersCount++;
         
-        // Calculate progress percentage
-        let used = source.used || 0;
-        let limit = source.limit || 0;
-        let percent = 0;
-        let isUnlimited = limit === 0;
-
-        if (!isUnlimited) {
-            percent = Math.min(100, Math.round((used / limit) * 100));
+        // Find the maximum usage percent among all quotas for this source (for stats & chart)
+        let maxUsagePct = 0;
+        let mostRestrictiveReset = null;
+        let isUnlimited = true;
+        let totalQuotasCount = source.quotas ? source.quotas.length : 0;
+        
+        let quotasHtml = '';
+        
+        if (source.quotas && source.quotas.length > 0) {
+            source.quotas.forEach(q => {
+                let used = q.used || 0;
+                let limit = q.limit || 0;
+                let percent = 0;
+                let isQUnlimited = limit === 0;
+                
+                if (!isQUnlimited) {
+                    isUnlimited = false;
+                    percent = Math.min(100, Math.round((used / limit) * 100));
+                }
+                
+                if (percent > maxUsagePct) {
+                    maxUsagePct = percent;
+                }
+                
+                // Track soonest reset date
+                if (q.resetDate) {
+                    const resetVal = new Date(q.resetDate);
+                    if (!isNaN(resetVal) && (!mostRestrictiveReset || resetVal < mostRestrictiveReset)) {
+                        mostRestrictiveReset = resetVal;
+                    }
+                    if (!isNaN(resetVal) && (!soonestReset.date || resetVal < soonestReset.date)) {
+                        soonestReset = { name: `${source.name} (${q.name})`, date: resetVal };
+                    }
+                }
+                
+                // Calculate time remaining countdown and bar percentage
+                const timeInfo = calculateTimeRemaining(q.resetDate, q.period);
+                
+                // Determine usage progress bar color
+                let progressColor = 'var(--color-green)';
+                if (percent > 85) progressColor = 'var(--color-red)';
+                else if (percent > 60) progressColor = 'var(--color-yellow)';
+                else if (percent > 30) progressColor = 'var(--color-blue)';
+                
+                if (isQUnlimited) {
+                    progressColor = 'var(--color-purple)';
+                }
+                
+                // Format display text (e.g. 79/200 requests or 37%)
+                const isPercentBased = (q.period === 'daily' || q.period === 'weekly' || q.period === 'five-hour') && limit === 100;
+                const valueText = isPercentBased ? `${percent}% used` : `${used} / ${limit}`;
+                
+                quotasHtml += `
+                    <div class="quota-item">
+                        <div class="quota-header">
+                            <span class="quota-name">${q.name}</span>
+                            <span class="quota-value">${isQUnlimited ? 'Unlimited' : valueText}</span>
+                        </div>
+                        
+                        <!-- Usage bar -->
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" style="width: ${isQUnlimited ? '100%' : `${percent}%`}; background-color: ${progressColor};"></div>
+                        </div>
+                        
+                        <!-- Time countdown bar -->
+                        ${q.resetDate ? `
+                        <div class="time-remaining-container">
+                            <span class="time-remaining-text">🕒 ${timeInfo.text}</span>
+                            <div class="time-bar">
+                                <div class="time-bar-fill" style="width: ${timeInfo.pct}%;"></div>
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+        } else {
+            // Fallback for empty or legacy data
+            quotasHtml = `<div class="quota-item" style="color: var(--text-muted);">No active limits configured.</div>`;
         }
 
         // Keep track of most used source (percentage basis)
-        if (!isUnlimited && percent > mostUsedSource.usagePct) {
-            mostUsedSource = { name: source.name, usagePct: percent };
-        }
-
-        // Keep track of soonest reset date
-        if (source.resetDate) {
-            const resetVal = new Date(source.resetDate);
-            if (!isNaN(resetVal) && (!soonestReset.date || resetVal < soonestReset.date)) {
-                soonestReset = { name: source.name, date: resetVal };
-            }
+        if (!isUnlimited && maxUsagePct > mostUsedSource.usagePct) {
+            mostUsedSource = { name: source.name, usagePct: maxUsagePct };
         }
 
         // Determine icon name
@@ -95,19 +158,7 @@ function renderDashboard(data) {
             else if (cleanKw.includes('devin')) iconName = 'devin';
             else if (cleanKw.includes('gemini')) iconName = 'gemini';
             else if (cleanKw.includes('claude')) iconName = 'claude';
-        }
-
-        // Compute SVG circle details
-        const strokeDashoffset = isUnlimited ? 0 : CIRCUMFERENCE - (percent / 100) * CIRCUMFERENCE;
-        
-        // Determine ring color depending on usage percent
-        let strokeColor = 'var(--color-green)';
-        if (percent > 85) strokeColor = 'var(--color-red)';
-        else if (percent > 60) strokeColor = 'var(--color-yellow)';
-        else if (percent > 30) strokeColor = 'var(--color-blue)';
-
-        if (isUnlimited) {
-            strokeColor = 'var(--color-purple)';
+            else if (cleanKw.includes('windsurf')) iconName = 'devin'; // Windsurf share devin/windsurf logo
         }
 
         // Build HTML card
@@ -117,33 +168,15 @@ function renderDashboard(data) {
             <div class="card-header">
                 <div class="card-title-group">
                     <h2>${source.name}</h2>
-                    <span class="card-meta">${isUnlimited ? 'Unlimited Plan' : `Limit: ${limit}`}</span>
+                    <span class="card-meta">${isUnlimited ? 'Unlimited Plan' : `${totalQuotasCount} active quota${totalQuotasCount > 1 ? 's' : ''}`}</span>
                 </div>
                 <div class="card-icon">
                     ${icons[iconName] || icons.default}
                 </div>
             </div>
             <div class="card-content">
-                <div class="progress-container">
-                    <svg class="progress-ring" width="100" height="100">
-                        <circle class="progress-ring__circle" stroke="rgba(255,255,255,0.03)" stroke-width="8" fill="transparent" r="40" cx="50" cy="50"/>
-                        <circle class="progress-ring__circle" stroke="${strokeColor}" stroke-width="8" stroke-dashoffset="${strokeDashoffset}" fill="transparent" r="40" cx="50" cy="50"/>
-                    </svg>
-                    <span class="progress-percentage">${isUnlimited ? '∞' : `${percent}%`}</span>
-                </div>
-                <div class="stats-list">
-                    <div class="stat-item">
-                        <span class="stat-label">Used</span>
-                        <span class="stat-val">${used}</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Remaining</span>
-                        <span class="stat-val">${isUnlimited ? 'Unlimited' : (limit - used)}</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Reset Date</span>
-                        <span class="stat-val">${source.resetDate || 'Unknown'}</span>
-                    </div>
+                <div class="quotas-list">
+                    ${quotasHtml}
                 </div>
             </div>
             <div class="card-footer">
@@ -158,14 +191,21 @@ function renderDashboard(data) {
         // Prep chart data
         if (!isUnlimited) {
             chartLabels.push(source.name);
-            chartUsagePercentages.push(percent);
+            chartUsagePercentages.push(maxUsagePct);
         }
     });
 
     // Populate overview widgets
     document.getElementById('total-trackers').textContent = activeTrackersCount;
     document.getElementById('most-used-app').textContent = mostUsedSource.name !== 'None' ? `${mostUsedSource.name} (${mostUsedSource.usagePct}%)` : 'All Clear (0%)';
-    document.getElementById('next-reset').textContent = soonestReset.date ? soonestReset.date.toLocaleDateString(undefined, {month: 'short', day: 'numeric'}) : 'N/A';
+    
+    // Calculate simple display for soonest reset text
+    if (soonestReset.date) {
+        const timeInfo = calculateTimeRemaining(soonestReset.date.toISOString(), null);
+        document.getElementById('next-reset').textContent = timeInfo.text.replace(" left", "");
+    } else {
+        document.getElementById('next-reset').textContent = 'N/A';
+    }
 
     // Render comparison chart
     initChart(chartLabels, chartUsagePercentages);
@@ -263,4 +303,47 @@ window.onclick = function(event) {
     if (event.target === modal) {
         modal.style.display = 'none';
     }
+}
+
+// Calculate remaining time countdown and elapsed percentage
+function calculateTimeRemaining(resetDateStr, period) {
+    if (!resetDateStr) return { text: "No Reset Date", pct: 0 };
+    
+    const now = new Date();
+    const reset = new Date(resetDateStr);
+    const diffMs = reset - now;
+    
+    if (diffMs <= 0) {
+        return { text: "Resets now", pct: 100 };
+    }
+    
+    // Calculate time text
+    const diffMins = Math.floor(diffMs / 1000 / 60);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    
+    let text = "";
+    if (diffDays > 0) {
+        text = `${diffDays}d ${diffHours % 24}h left`;
+    } else if (diffHours > 0) {
+        text = `${diffHours}h ${diffMins % 60}m left`;
+    } else {
+        text = `${diffMins}m left`;
+    }
+    
+    // Calculate percentage of time elapsed/remaining in the cycle
+    let totalPeriodMs = 1000 * 60 * 60 * 24; // Default 1 day
+    const cleanPeriod = (period || "").toLowerCase();
+    if (cleanPeriod.includes("weekly") || cleanPeriod.includes("week")) {
+        totalPeriodMs = 1000 * 60 * 60 * 24 * 7;
+    } else if (cleanPeriod.includes("monthly") || cleanPeriod.includes("month")) {
+        totalPeriodMs = 1000 * 60 * 60 * 24 * 30;
+    } else if (cleanPeriod.includes("five-hour") || cleanPeriod.includes("5-hour") || cleanPeriod.includes("5 hour")) {
+        totalPeriodMs = 1000 * 60 * 60 * 5;
+    } else if (cleanPeriod.includes("daily") || cleanPeriod.includes("day")) {
+        totalPeriodMs = 1000 * 60 * 60 * 24;
+    }
+    
+    const timeRemainingPct = Math.min(100, Math.max(0, (diffMs / totalPeriodMs) * 100));
+    return { text, pct: Math.round(timeRemainingPct) };
 }
